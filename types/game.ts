@@ -23,6 +23,7 @@ export interface Room {
   settings: RoomSettings
   status: RoomStatus
   created_at: string
+  expires_at: string
 }
 
 export interface Player {

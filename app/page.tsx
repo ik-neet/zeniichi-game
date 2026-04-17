@@ -16,6 +16,7 @@ export default function HomePage() {
       const sessionId = getOrCreateSessionId()
       const supabase = getSupabaseClient()
 
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
       const { data, error } = await supabase
         .from('rooms')
         .insert({
@@ -26,6 +27,7 @@ export default function HomePage() {
             parentCanAnswer: true,
           },
           status: 'waiting',
+          expires_at: expiresAt,
         })
         .select('id')
         .single()

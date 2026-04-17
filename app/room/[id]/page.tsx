@@ -25,6 +25,7 @@ export default function RoomPage() {
   const [presetQuestions, setPresetQuestions] = useState<PresetQuestion[]>([])
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const [expired, setExpired] = useState(false)
 
   const channelRef = useRef<ReturnType<ReturnType<typeof getSupabaseClient>['channel']> | null>(null)
 
@@ -41,6 +42,12 @@ export default function RoomPage() {
 
     if (roomRes.error || !roomRes.data) {
       setNotFound(true)
+      setLoading(false)
+      return
+    }
+
+    if (new Date(roomRes.data.expires_at) < new Date()) {
+      setExpired(true)
       setLoading(false)
       return
     }
@@ -271,6 +278,18 @@ export default function RoomPage() {
         <div className="text-center space-y-2">
           <p className="text-2xl font-bold text-slate-700 dark:text-slate-300">部屋が見つかりません</p>
           <p className="text-slate-400">URLを確認してください</p>
+        </div>
+      </main>
+    )
+  }
+
+  if (expired) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+        <div className="text-center space-y-2">
+          <p className="text-2xl font-bold text-slate-700 dark:text-slate-300">この部屋は期限切れです</p>
+          <p className="text-slate-400">部屋は作成から24時間で自動的に削除されます</p>
+          <a href="/" className="inline-block mt-4 text-sm text-blue-500 hover:underline">トップへ戻る</a>
         </div>
       </main>
     )
