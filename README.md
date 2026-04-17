@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎯 全員一致ゲーム
 
-## Getting Started
+複数人でリアルタイムに楽しめるブラウザゲームです。
+親がお題を出し、全員の回答が一致することを目指します。
 
-First, run the development server:
+## 機能
+
+- 部屋を作ってURLで友達を招待
+- ニックネームのみで参加可能（ログイン不要）
+- リアルタイムで状態が同期
+- 親の決め方を4種類から選べる
+- プリセット質問 or 自由入力でお題を出せる
+- スコア集計
+
+## セットアップ
+
+### 1. Supabaseプロジェクトを作成
+
+1. [supabase.com](https://supabase.com) でプロジェクトを作成
+2. SQL Editor で `supabase/migrations/001_initial_schema.sql` を実行
+3. **Realtime** を有効化（Table Editor で `rooms`, `players`, `rounds`, `answers` それぞれの Realtime を ON）
+
+### 2. 環境変数を設定
+
+`.env.local.example` をコピーして `.env.local` を作成:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.local.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Supabaseダッシュボードの Project Settings > API から値を取得して設定:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. 開発サーバー起動
 
-## Learn More
+```bash
+npm install
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Vercelへのデプロイ
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. GitHubにプッシュ
+2. Vercelでリポジトリをインポート
+3. 環境変数を設定（`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`）
+4. デプロイ
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## ページ構成
 
-## Deploy on Vercel
+| パス | 説明 |
+|---|---|
+| `/` | トップページ（部屋を作るボタン） |
+| `/room/[id]` | ゲームページ（参加〜ゲーム終了まで） |
+| `/admin` | 管理者画面（プリセット質問管理） |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## ゲームの流れ
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+部屋を作る → ニックネーム入力 → ロビー（参加者を待つ）
+    ↓ ホストが「ゲームを開始する」
+親がお題を入力（プリセット or 自由入力）
+    ↓ 「出題する」
+全員が回答を入力
+    ↓ 親が「回答終了」
+全員の回答が表示される
+    ↓ 親が「全員一致！」or「不一致」を判定
+スコア表示 → 次のラウンドへ
+```
+
+## Tech Stack
+
+- **Next.js 16** (App Router)
+- **Supabase** (PostgreSQL + Realtime)
+- **Tailwind CSS + shadcn/ui**
+- **TypeScript**
