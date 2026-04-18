@@ -31,7 +31,7 @@ export function NicknameForm({ onJoin }: NicknameFormProps) {
       <Card className="w-full max-w-sm border-violet-200 shadow-xl shadow-violet-100">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-black bg-gradient-to-r from-violet-600 to-cyan-500 bg-clip-text text-transparent">
-            🎯 全員一致！
+            🎯 全員一致ゲーム
           </CardTitle>
           <CardDescription className="text-slate-500">ニックネームを入力して参加しましょう</CardDescription>
         </CardHeader>

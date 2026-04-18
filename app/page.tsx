@@ -47,7 +47,7 @@ export default function HomePage() {
       <div className="text-center space-y-8 max-w-md w-full">
         <div className="space-y-3">
           <h1 className="text-5xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
-            🎯 全員一致！
+            🎯 全員一致ゲーム
           </h1>
           <p className="text-lg text-slate-600 dark:text-slate-400">
             みんなの答えをひとつにまとめよう
