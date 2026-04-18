@@ -22,8 +22,8 @@ export default function HomePage() {
         .insert({
           host_session_id: sessionId,
           settings: {
-            parentMode: 'host',
-            fixedParentNickname: null,
+            hostAlwaysParent: true,
+            parentSelectionMode: 'random',
             parentCanAnswer: true,
           },
           status: 'waiting',

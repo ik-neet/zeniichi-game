@@ -14,22 +14,12 @@ export function determineParentSessionId(
   const host = players.find((p) => p.is_host)
   const hostSessionId = host?.session_id ?? players[0].session_id
 
-  switch (settings.parentMode) {
-    case 'host':
-      return hostSessionId
+  if (settings.hostAlwaysParent) {
+    return hostSessionId
+  }
 
-    case 'fixed': {
-      if (settings.fixedParentNickname) {
-        const fixed = players.find(
-          (p) => p.nickname === settings.fixedParentNickname
-        )
-        if (fixed) return fixed.session_id
-      }
-      return hostSessionId
-    }
-
+  switch (settings.parentSelectionMode) {
     case 'rotation': {
-      // 参加順でラウンドごとに順番に親が変わる
       const sortedPlayers = [...players].sort(
         (a, b) => new Date(a.joined_at).getTime() - new Date(b.joined_at).getTime()
       )
@@ -37,13 +27,11 @@ export function determineParentSessionId(
       return sortedPlayers[index].session_id
     }
 
-    case 'random': {
+    case 'random':
+    default: {
       const random = players[Math.floor(Math.random() * players.length)]
       return random.session_id
     }
-
-    default:
-      return hostSessionId
   }
 }
 

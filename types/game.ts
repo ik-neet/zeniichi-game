@@ -1,4 +1,4 @@
-export type ParentMode = 'host' | 'fixed' | 'rotation' | 'random'
+export type ParentSelectionMode = 'random' | 'rotation'
 
 export type RoomStatus = 'waiting' | 'playing' | 'finished'
 
@@ -12,8 +12,8 @@ export type RoundStatus =
 export type RoundResult = 'match' | 'no_match' | null
 
 export interface RoomSettings {
-  parentMode: ParentMode
-  fixedParentNickname: string | null
+  hostAlwaysParent: boolean
+  parentSelectionMode: ParentSelectionMode
   parentCanAnswer: boolean
 }
 
