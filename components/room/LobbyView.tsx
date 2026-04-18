@@ -52,7 +52,7 @@ export function LobbyView({
       <div className="max-w-md mx-auto space-y-4 pt-8">
         <div className="text-center">
           <h1 className="text-3xl font-black bg-gradient-to-r from-violet-600 to-cyan-500 bg-clip-text text-transparent">
-            🎯 全員一致ゲーム
+            全員一致ゲーム
           </h1>
           <p className="text-sm text-violet-400 mt-1 animate-pulse">待ち受け中...</p>
         </div>

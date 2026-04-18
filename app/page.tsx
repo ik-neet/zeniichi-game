@@ -47,7 +47,7 @@ export default function HomePage() {
       <div className="text-center space-y-8 max-w-md w-full">
         <div className="space-y-3">
           <h1 className="text-5xl font-black bg-gradient-to-r from-violet-600 to-cyan-500 bg-clip-text text-transparent">
-            🎯 全員一致ゲーム
+            全員一致ゲーム
           </h1>
           <p className="text-lg text-slate-500">
             みんなの答えをひとつにまとめよう
