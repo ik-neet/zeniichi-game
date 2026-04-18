@@ -74,6 +74,12 @@ export default function HomePage() {
         <p className="text-xs text-slate-400">
           ログイン不要・ニックネームだけで遊べます
         </p>
+        <a
+          href="/admin/login"
+          className="text-xs text-slate-300 hover:text-slate-400 transition-colors"
+        >
+          管理者ログイン
+        </a>
       </div>
     </main>
   )
