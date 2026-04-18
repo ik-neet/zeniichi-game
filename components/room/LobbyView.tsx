@@ -66,7 +66,7 @@ export function LobbyView({
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="flex gap-2">
-              <code className="flex-1 text-xs bg-violet-50 rounded px-3 py-2 truncate text-slate-600">
+              <code className="flex-1 text-xs bg-violet-50 rounded px-3 py-2 break-all text-slate-600">
                 {inviteUrl}
               </code>
               <Button
