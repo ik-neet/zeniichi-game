@@ -38,14 +38,14 @@ export function QuestioningView({
 
   if (!isParent) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
+      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-white to-cyan-50 p-4">
         <div className="text-center space-y-4 max-w-sm">
-          <div className="text-6xl animate-pulse">🤔</div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-50">
+          <div className="text-6xl animate-bounce">🤔</div>
+          <h2 className="text-xl font-bold text-slate-800">
             ラウンド {roundNumber}
           </h2>
-          <p className="text-slate-600 dark:text-slate-400">
-            <span className="font-semibold">{parentNickname}</span>さんがお題を考えています...
+          <p className="text-slate-500">
+            <span className="font-semibold text-violet-600">{parentNickname}</span>さんがお題を考えています...
           </p>
         </div>
       </main>
@@ -53,21 +53,23 @@ export function QuestioningView({
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
+    <main className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-cyan-50 p-4">
       <div className="max-w-md mx-auto space-y-4 pt-8">
         <div className="text-center space-y-1">
-          <Badge className="bg-amber-500 hover:bg-amber-500">ラウンド {roundNumber} - あなたが親</Badge>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50">お題を出しましょう</h2>
+          <Badge className="bg-gradient-to-r from-amber-400 to-orange-400 text-white border-0 font-bold px-3 py-1">
+            ラウンド {roundNumber} — あなたが親 👑
+          </Badge>
+          <h2 className="text-2xl font-black text-slate-800 mt-2">お題を出しましょう</h2>
         </div>
 
         <div className="flex gap-2">
           <button
             type="button"
             onClick={() => setUsePreset(false)}
-            className={`flex-1 py-2 text-sm rounded-lg font-medium transition-colors ${
+            className={`btn-animated flex-1 py-2 text-sm rounded-lg font-semibold transition-all ${
               !usePreset
-                ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
-                : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700'
+                ? 'bg-gradient-to-r from-violet-500 to-cyan-500 text-white shadow-md shadow-violet-200'
+                : 'bg-white border border-slate-200 text-slate-500 hover:border-violet-300'
             }`}
           >
             自分で入力
@@ -75,10 +77,10 @@ export function QuestioningView({
           <button
             type="button"
             onClick={() => setUsePreset(true)}
-            className={`flex-1 py-2 text-sm rounded-lg font-medium transition-colors ${
+            className={`btn-animated flex-1 py-2 text-sm rounded-lg font-semibold transition-all ${
               usePreset
-                ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
-                : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700'
+                ? 'bg-gradient-to-r from-violet-500 to-cyan-500 text-white shadow-md shadow-violet-200'
+                : 'bg-white border border-slate-200 text-slate-500 hover:border-violet-300'
             }`}
           >
             プリセットから選ぶ
@@ -86,29 +88,29 @@ export function QuestioningView({
         </div>
 
         {!usePreset ? (
-          <Card>
+          <Card className="border-violet-200 shadow-sm shadow-violet-100">
             <CardContent className="pt-4 space-y-3">
               <Textarea
                 placeholder="例: 好きな食べ物は？"
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
-                className="resize-none"
+                className="resize-none border-violet-200 focus:border-violet-400 focus:ring-violet-200"
                 rows={3}
                 autoFocus
               />
               <Button
                 onClick={() => handleSubmit(question)}
                 disabled={!question.trim() || submitting}
-                className="w-full"
+                className="btn-animated w-full bg-gradient-to-r from-violet-500 to-cyan-500 hover:from-violet-600 hover:to-cyan-600 hover:shadow-lg hover:shadow-violet-200 text-white font-bold border-0"
               >
-                {submitting ? '出題中...' : '出題する'}
+                {submitting ? '出題中...' : '📝 出題する'}
               </Button>
             </CardContent>
           </Card>
         ) : (
-          <Card>
+          <Card className="border-violet-200 shadow-sm shadow-violet-100">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-slate-500">プリセット質問</CardTitle>
+              <CardTitle className="text-sm text-violet-500">プリセット質問</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               {presetQuestions.length === 0 ? (
@@ -122,7 +124,7 @@ export function QuestioningView({
                     type="button"
                     onClick={() => handleSubmit(q.text)}
                     disabled={submitting}
-                    className="w-full text-left p-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm transition-colors"
+                    className="btn-animated w-full text-left p-3 rounded-lg border border-violet-100 bg-violet-50 hover:bg-violet-100 hover:border-violet-300 hover:shadow-md hover:shadow-violet-100 text-sm text-slate-700 font-medium transition-all"
                   >
                     {q.text}
                   </button>

@@ -27,16 +27,18 @@ export function NicknameForm({ onJoin }: NicknameFormProps) {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
-      <Card className="w-full max-w-sm">
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-white to-cyan-50 p-4">
+      <Card className="w-full max-w-sm border-violet-200 shadow-xl shadow-violet-100">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">🎯 全員一致！</CardTitle>
-          <CardDescription>ニックネームを入力して参加しましょう</CardDescription>
+          <CardTitle className="text-2xl font-black bg-gradient-to-r from-violet-600 to-cyan-500 bg-clip-text text-transparent">
+            🎯 全員一致！
+          </CardTitle>
+          <CardDescription className="text-slate-500">ニックネームを入力して参加しましょう</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="nickname">ニックネーム</Label>
+              <Label htmlFor="nickname" className="text-violet-700 font-medium">ニックネーム</Label>
               <Input
                 id="nickname"
                 placeholder="例: たろう"
@@ -44,14 +46,15 @@ export function NicknameForm({ onJoin }: NicknameFormProps) {
                 onChange={(e) => setNickname(e.target.value)}
                 maxLength={20}
                 autoFocus
+                className="border-violet-200 focus:border-violet-400 focus:ring-violet-200"
               />
             </div>
             <Button
               type="submit"
-              className="w-full"
+              className="btn-animated w-full bg-gradient-to-r from-violet-500 to-cyan-500 hover:from-violet-600 hover:to-cyan-600 hover:shadow-lg hover:shadow-violet-200 text-white font-bold border-0"
               disabled={!nickname.trim() || loading}
             >
-              {loading ? '参加中...' : '参加する'}
+              {loading ? '参加中...' : '🎮 参加する'}
             </Button>
           </form>
         </CardContent>

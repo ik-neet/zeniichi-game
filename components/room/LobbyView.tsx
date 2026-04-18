@@ -48,26 +48,33 @@ export function LobbyView({
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
+    <main className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-cyan-50 p-4">
       <div className="max-w-md mx-auto space-y-4 pt-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-50">🎯 全員一致！</h1>
-          <p className="text-sm text-slate-500 mt-1">待ち受け中...</p>
+          <h1 className="text-3xl font-black bg-gradient-to-r from-violet-600 to-cyan-500 bg-clip-text text-transparent">
+            🎯 全員一致！
+          </h1>
+          <p className="text-sm text-violet-400 mt-1 animate-pulse">待ち受け中...</p>
         </div>
 
         {/* 招待URL */}
-        <Card>
+        <Card className="border-violet-200 shadow-sm shadow-violet-100">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
+            <CardTitle className="text-sm font-medium text-violet-500">
               参加URLを共有しよう
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="flex gap-2">
-              <code className="flex-1 text-xs bg-slate-100 dark:bg-slate-800 rounded px-3 py-2 truncate text-slate-700 dark:text-slate-300">
+              <code className="flex-1 text-xs bg-violet-50 rounded px-3 py-2 truncate text-slate-600">
                 {inviteUrl}
               </code>
-              <Button variant="outline" size="sm" onClick={handleCopyUrl}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCopyUrl}
+                className="btn-animated border-violet-300 text-violet-600 hover:bg-violet-50 hover:border-violet-400 hover:shadow-md hover:shadow-violet-100"
+              >
                 コピー
               </Button>
             </div>
@@ -75,9 +82,9 @@ export function LobbyView({
         </Card>
 
         {/* 参加者リスト */}
-        <Card>
+        <Card className="border-cyan-200 shadow-sm shadow-cyan-100">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
+            <CardTitle className="text-sm font-medium text-cyan-600">
               参加者 ({players.length}人)
             </CardTitle>
           </CardHeader>
@@ -92,9 +99,9 @@ export function LobbyView({
 
         {/* ゲーム設定 (ホストのみ) */}
         {isHost && (
-          <Card>
+          <Card className="border-amber-200 shadow-sm shadow-amber-100">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
+              <CardTitle className="text-sm font-medium text-amber-600">
                 ゲーム設定
               </CardTitle>
             </CardHeader>
@@ -107,14 +114,14 @@ export function LobbyView({
         {/* 開始ボタン (ホストのみ) */}
         {isHost && (
           <>
-            <Separator />
+            <Separator className="bg-violet-100" />
             <Button
               onClick={handleStart}
               disabled={starting || players.length < 2}
-              className="w-full h-12 text-base font-semibold"
+              className="btn-animated w-full h-12 text-base font-bold bg-gradient-to-r from-violet-500 to-cyan-500 hover:from-violet-600 hover:to-cyan-600 hover:shadow-lg hover:shadow-violet-200 text-white border-0"
               size="lg"
             >
-              {starting ? '開始中...' : 'ゲームを開始する'}
+              {starting ? '開始中...' : '🚀 ゲームを開始する'}
             </Button>
             {players.length < 2 && (
               <p className="text-xs text-center text-slate-400">
@@ -125,7 +132,7 @@ export function LobbyView({
         )}
 
         {!isHost && (
-          <p className="text-sm text-center text-slate-500 py-4">
+          <p className="text-sm text-center text-slate-400 py-4">
             ホストがゲームを開始するまでお待ちください...
           </p>
         )}

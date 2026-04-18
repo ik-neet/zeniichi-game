@@ -33,17 +33,19 @@ export function ReviewingView({
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
+    <main className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-cyan-50 p-4">
       <div className="max-w-md mx-auto space-y-4 pt-8">
         <div className="text-center space-y-1">
-          <Badge variant="outline">ラウンド {roundNumber}</Badge>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-50">みんなの回答</h2>
+          <Badge className="bg-gradient-to-r from-cyan-400 to-blue-500 text-white border-0 font-bold px-3 py-1">
+            ラウンド {roundNumber}
+          </Badge>
+          <h2 className="text-xl font-black text-slate-800 mt-2">📋 みんなの回答</h2>
         </div>
 
         {/* 質問 */}
-        <Card className="border-2 border-slate-300 dark:border-slate-600">
+        <Card className="border-2 border-cyan-300 shadow-md shadow-cyan-100 bg-gradient-to-r from-cyan-50 to-blue-50">
           <CardContent className="pt-4">
-            <p className="text-center text-lg font-semibold text-slate-800 dark:text-slate-200">
+            <p className="text-center text-lg font-bold text-slate-800">
               {question}
             </p>
           </CardContent>
@@ -51,18 +53,28 @@ export function ReviewingView({
 
         {/* 回答一覧 */}
         <div className="space-y-2">
-          {answers.map((answer) => (
-            <Card key={answer.id}>
-              <CardContent className="pt-3 pb-3">
-                <div className="flex items-start justify-between gap-2">
-                  <span className="text-xs text-slate-400 shrink-0 pt-0.5">{answer.player_nickname}</span>
-                  <p className="text-sm font-medium text-slate-800 dark:text-slate-200 text-right">
-                    {answer.content}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          {answers.map((answer, i) => {
+            const colors = [
+              'border-l-violet-400 bg-violet-50',
+              'border-l-cyan-400 bg-cyan-50',
+              'border-l-pink-400 bg-pink-50',
+              'border-l-amber-400 bg-amber-50',
+              'border-l-green-400 bg-green-50',
+            ]
+            const colorClass = colors[i % colors.length]
+            return (
+              <Card key={answer.id} className={`border-l-4 ${colorClass} border-t-0 border-r-0 border-b-0`}>
+                <CardContent className="pt-3 pb-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-xs font-semibold text-slate-500 shrink-0 pt-0.5">{answer.player_nickname}</span>
+                    <p className="text-sm font-bold text-slate-800 text-right">
+                      {answer.content}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
 
         {/* 判定ボタン (親のみ) */}
@@ -75,15 +87,14 @@ export function ReviewingView({
               <Button
                 onClick={() => handleJudge('match')}
                 disabled={judging}
-                className="h-14 text-base font-bold bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700"
+                className="btn-animated h-14 text-base font-black bg-gradient-to-r from-emerald-400 to-green-500 hover:from-emerald-500 hover:to-green-600 hover:shadow-lg hover:shadow-green-200 text-white border-0"
               >
                 🎉 全員一致！
               </Button>
               <Button
                 onClick={() => handleJudge('no_match')}
                 disabled={judging}
-                variant="outline"
-                className="h-14 text-base font-bold"
+                className="btn-animated h-14 text-base font-black bg-gradient-to-r from-rose-400 to-red-500 hover:from-rose-500 hover:to-red-600 hover:shadow-lg hover:shadow-red-200 text-white border-0"
               >
                 😔 不一致
               </Button>
@@ -92,7 +103,7 @@ export function ReviewingView({
         )}
 
         {!isParent && (
-          <p className="text-sm text-center text-slate-500 py-2">
+          <p className="text-sm text-center text-slate-400 py-2">
             親が判定します...
           </p>
         )}
