@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -10,12 +11,14 @@ import { getSupabaseClient } from '@/lib/supabase'
 import type { PresetQuestion } from '@/types/game'
 
 export default function AdminPage() {
+  const router = useRouter()
   const [questions, setQuestions] = useState<PresetQuestion[]>([])
   const [newText, setNewText] = useState('')
   const [newCategory, setNewCategory] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [loggingOut, setLoggingOut] = useState(false)
 
   const fetchQuestions = async () => {
     const supabase = getSupabaseClient()
@@ -58,12 +61,33 @@ export default function AdminPage() {
     }
   }
 
+  const handleLogout = async () => {
+    setLoggingOut(true)
+    try {
+      await fetch('/api/admin/logout', { method: 'POST' })
+      router.push('/admin/login')
+      router.refresh()
+    } finally {
+      setLoggingOut(false)
+    }
+  }
+
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-slate-900 p-4">
       <div className="max-w-2xl mx-auto space-y-6 pt-8">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-50">管理者画面</h1>
-          <p className="text-sm text-slate-500 mt-1">プリセット質問の管理</p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-50">管理者画面</h1>
+            <p className="text-sm text-slate-500 mt-1">プリセット質問の管理</p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLogout}
+            disabled={loggingOut}
+          >
+            {loggingOut ? 'ログアウト中...' : 'ログアウト'}
+          </Button>
         </div>
 
         {/* 質問追加フォーム */}
