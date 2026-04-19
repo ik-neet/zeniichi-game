@@ -71,7 +71,7 @@ export function AnsweringView({
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const floatingInputRef = useRef<HTMLInputElement>(null)
+  const floatingInputRef = useRef<HTMLTextAreaElement>(null)
   const lastPoint = useRef<{ x: number; y: number } | null>(null)
   const savedDrawing = useRef<ImageData | null>(null)
   // 物理ピクセルサイズ（DPR対応）
@@ -133,6 +133,13 @@ export function AnsweringView({
     return () => { document.body.style.overflow = '' }
   }, [modalOpen])
 
+  const drawMultilineText = (ctx: CanvasRenderingContext2D, text: string, x: number, y: number) => {
+    const lineHeight = fontSize * 1.25
+    text.split('\n').forEach((line, i) => {
+      ctx.fillText(line, x, y + i * lineHeight)
+    })
+  }
+
   // テキスト入力のリアルタイムプレビュー
   useEffect(() => {
     const canvas = canvasRef.current
@@ -143,8 +150,9 @@ export function AnsweringView({
       ctx.font = `bold ${fontSize}px sans-serif`
       ctx.fillStyle = PEN_COLOR
       ctx.textBaseline = 'top'
-      ctx.fillText(textInput, textAnchor.canvasX, textAnchor.canvasY)
+      drawMultilineText(ctx, textInput, textAnchor.canvasX, textAnchor.canvasY)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [textInput, textAnchor, fontSize])
 
   const commitText = useCallback(() => {
@@ -159,7 +167,7 @@ export function AnsweringView({
       ctx.font = `bold ${fontSize}px sans-serif`
       ctx.fillStyle = PEN_COLOR
       ctx.textBaseline = 'top'
-      ctx.fillText(textInput.trim(), textAnchor.canvasX, textAnchor.canvasY)
+      drawMultilineText(ctx, textInput.trim(), textAnchor.canvasX, textAnchor.canvasY)
       savedDrawing.current = ctx.getImageData(0, 0, canvasPhysW.current, canvasPhysH.current)
       setHasContent(true)
     } else if (savedDrawing.current) {
@@ -429,12 +437,12 @@ export function AnsweringView({
 
           {/* PC用: 透明フローティング入力（タッチ端末では使われない） */}
           {mode === 'text' && textAnchor && (
-            <input
+            <textarea
               ref={floatingInputRef}
               value={textInput}
               onChange={(e) => setTextInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') commitText() }}
-              className="absolute bg-transparent border-none outline-none caret-white p-0 m-0 pointer-events-none opacity-0"
+              onKeyDown={(e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); commitText() } }}
+              className="absolute bg-transparent border-none outline-none caret-white p-0 m-0 pointer-events-none opacity-0 resize-none"
               style={{
                 color: 'transparent',
                 left: textAnchor.displayX,
@@ -466,21 +474,22 @@ export function AnsweringView({
 
       {/* テキストモード入力バー（タッチ端末でも確実に入力できる可視バー） */}
       {mode === 'text' && textAnchor && (
-        <div className="flex-shrink-0 flex items-center gap-2 px-3 py-2 bg-slate-800 border-t border-slate-600">
-          <input
-            ref={floatingInputRef}
+        <div className="flex-shrink-0 flex items-start gap-2 px-3 py-2 bg-slate-800 border-t border-slate-600">
+          <textarea
+            ref={floatingInputRef as React.RefObject<HTMLTextAreaElement>}
             value={textInput}
             onChange={(e) => setTextInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') commitText() }}
-            placeholder="テキストを入力..."
-            className="flex-1 bg-slate-700 text-white placeholder:text-slate-400 rounded-lg px-3 py-2 text-base border-none outline-none"
+            onKeyDown={(e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); commitText() } }}
+            placeholder={"テキストを入力...\nCtrl+Enterで確定"}
+            rows={3}
+            className="flex-1 bg-slate-700 text-white placeholder:text-slate-400 rounded-lg px-3 py-2 text-base border-none outline-none resize-none"
             autoComplete="off"
             autoFocus
           />
           <button
             type="button"
             onClick={commitText}
-            className="bg-violet-500 text-white rounded-lg px-4 py-2 font-bold text-sm flex-shrink-0"
+            className="bg-violet-500 text-white rounded-lg px-4 py-2 font-bold text-sm flex-shrink-0 self-end"
           >
             確定
           </button>
