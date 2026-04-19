@@ -9,13 +9,12 @@ import type { Player } from '@/types/game'
 const CANVAS_BG = '#1e3a5f'
 const PEN_COLOR = '#ffffff'
 const CANVAS_W = 600
-const CANVAS_H = 480
+const CANVAS_H = 320
 
 const PEN_WIDTHS = [
   { label: '細', value: 3 },
   { label: '中', value: 7 },
   { label: '太', value: 14 },
-  { label: '極太', value: 24 },
 ]
 
 const FONT_SIZES = [
