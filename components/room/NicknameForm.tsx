@@ -46,7 +46,7 @@ export function NicknameForm({ onJoin }: NicknameFormProps) {
                 onChange={(e) => setNickname(e.target.value)}
                 maxLength={20}
                 autoFocus
-                className="border-violet-200 focus:border-violet-400 focus:ring-violet-200"
+                className="border-violet-200 focus:border-violet-400 focus:ring-violet-200 text-slate-800 placeholder:text-slate-400"
               />
             </div>
             <Button
