@@ -79,7 +79,7 @@ export function ReviewingView({
                   <span className="text-xs font-semibold text-slate-500 block">{answer.player_nickname}</span>
                   {drawing && (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={drawing} alt={answer.player_nickname} className="w-full rounded" />
+                    <img src={drawing} alt={answer.player_nickname} className="w-full rounded" style={{ backgroundColor: '#1e3a5f' }} />
                   )}
                   {text && (
                     <p className="text-sm font-bold text-slate-800">{text}</p>
