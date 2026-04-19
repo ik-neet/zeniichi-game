@@ -7,12 +7,6 @@ interface PlayerListProps {
   parentSessionId?: string
 }
 
-const rankColors = [
-  'text-amber-500',   // 1位: ゴールド
-  'text-slate-400',   // 2位: シルバー
-  'text-orange-400',  // 3位: ブロンズ
-]
-
 export function PlayerList({ players, currentSessionId, parentSessionId }: PlayerListProps) {
   return (
     <div className="space-y-2">
@@ -34,7 +28,7 @@ export function PlayerList({ players, currentSessionId, parentSessionId }: Playe
           >
             <div className="flex items-center gap-2">
               {index < 3 && (
-                <span className={`text-sm font-black ${rankColors[index]}`}>
+                <span className="text-sm">
                   {['🥇', '🥈', '🥉'][index]}
                 </span>
               )}
@@ -52,9 +46,6 @@ export function PlayerList({ players, currentSessionId, parentSessionId }: Playe
               {parentSessionId && player.session_id === parentSessionId && (
                 <Badge className="text-xs bg-amber-100 text-amber-600 border-amber-200 hover:bg-amber-100">親 👑</Badge>
               )}
-              <span className="text-sm font-black text-slate-700 ml-1">
-                {player.score}pt
-              </span>
             </div>
           </div>
         )

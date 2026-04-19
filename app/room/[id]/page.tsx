@@ -20,6 +20,7 @@ export default function RoomPage() {
   const [sessionId, setSessionId] = useState<string>('')
   const [room, setRoom] = useState<Room | null>(null)
   const [players, setPlayers] = useState<Player[]>([])
+  const [allRounds, setAllRounds] = useState<Round[]>([])
   const [currentRound, setCurrentRound] = useState<Round | null>(null)
   const [answers, setAnswers] = useState<Answer[]>([])
   const [presetQuestions, setPresetQuestions] = useState<PresetQuestion[]>([])
@@ -36,7 +37,7 @@ export default function RoomPage() {
     const [roomRes, playersRes, roundsRes, presetsRes] = await Promise.all([
       supabase.from('rooms').select('*').eq('id', roomId).single(),
       supabase.from('players').select('*').eq('room_id', roomId).order('joined_at'),
-      supabase.from('rounds').select('*').eq('room_id', roomId).order('round_number', { ascending: false }).limit(1),
+      supabase.from('rounds').select('*').eq('room_id', roomId).order('round_number'),
       supabase.from('preset_questions').select('*').order('created_at'),
     ])
 
@@ -56,7 +57,9 @@ export default function RoomPage() {
     setPlayers(playersRes.data ?? [])
     setPresetQuestions(presetsRes.data ?? [])
 
-    const latestRound = roundsRes.data?.[0] ?? null
+    const rounds = roundsRes.data ?? []
+    setAllRounds(rounds)
+    const latestRound = rounds[rounds.length - 1] ?? null
     setCurrentRound(latestRound)
 
     if (latestRound) {
@@ -98,6 +101,12 @@ export default function RoomPage() {
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             const round = payload.new as Round
             setCurrentRound(round)
+            setAllRounds((prev) => {
+              const idx = prev.findIndex((r) => r.id === round.id)
+              return idx >= 0
+                ? prev.map((r) => r.id === round.id ? round : r)
+                : [...prev, round]
+            })
             // 新しいラウンドなら回答をリセット
             if (payload.eventType === 'INSERT') {
               setAnswers([])
@@ -214,18 +223,6 @@ export default function RoomPage() {
   const handleJudge = async (result: 'match' | 'no_match') => {
     const supabase = getSupabaseClient()
     await supabase.from('rounds').update({ status: 'judging', result }).eq('id', currentRound!.id)
-
-    if (result === 'match') {
-      // 回答したプレイヤー全員に +1pt
-      const scoringSessionIds = answers.map((a) => a.player_session_id)
-      await Promise.all(
-        players
-          .filter((p) => scoringSessionIds.includes(p.session_id))
-          .map((p) =>
-            supabase.from('players').update({ score: p.score + 1 }).eq('id', p.id)
-          )
-      )
-    }
   }
 
   const handleNextRound = async () => {
@@ -261,6 +258,9 @@ export default function RoomPage() {
 
   const answeredSessionIds = answers.map((a) => a.player_session_id)
   const hasAnswered = answeredSessionIds.includes(sessionId)
+
+  const matchCount = allRounds.filter((r) => r.result === 'match').length
+  const noMatchCount = allRounds.filter((r) => r.result === 'no_match').length
 
   // ---- レンダリング ----
 
@@ -367,6 +367,8 @@ export default function RoomPage() {
         parentSessionId={parentSessionId}
         isParent={isParent}
         isHost={isHost}
+        matchCount={matchCount}
+        noMatchCount={noMatchCount}
         onNextRound={handleNextRound}
       />
     )

@@ -14,6 +14,8 @@ interface JudgingViewProps {
   parentSessionId: string
   isParent: boolean
   isHost: boolean
+  matchCount: number
+  noMatchCount: number
   onNextRound: () => Promise<void>
 }
 
@@ -25,6 +27,8 @@ export function JudgingView({
   parentSessionId,
   isParent,
   isHost,
+  matchCount,
+  noMatchCount,
   onNextRound,
 }: JudgingViewProps) {
   const [loading, setLoading] = useState(false)
@@ -64,21 +68,34 @@ export function JudgingView({
             >
               {isMatch ? '全員一致！' : '不一致...'}
             </h2>
-            {isMatch && (
-              <p className="text-sm text-emerald-600 mt-1 font-bold">
-                🏆 全員 +1pt 獲得！
-              </p>
-            )}
           </div>
         </div>
 
-        {/* スコアボード */}
+        {/* 共有スコア */}
         <Card className={`shadow-md ${
           isMatch ? 'border-emerald-200 shadow-emerald-100' : 'border-rose-200 shadow-rose-100'
         }`}>
+          <CardContent className="pt-4 pb-4">
+            <p className="text-xs text-center text-slate-400 font-semibold mb-3">みんなの記録</p>
+            <div className="flex items-center justify-center gap-8">
+              <div className="text-center">
+                <p className="text-xs text-emerald-600 font-semibold mb-1">全員一致</p>
+                <p className="text-4xl font-black text-emerald-500">{matchCount}</p>
+              </div>
+              <div className="w-px h-12 bg-slate-200" />
+              <div className="text-center">
+                <p className="text-xs text-rose-500 font-semibold mb-1">全員不一致</p>
+                <p className="text-4xl font-black text-rose-400">{noMatchCount}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* プレイヤー一覧 */}
+        <Card className="border-slate-200 shadow-sm">
           <CardContent className="pt-4">
             <PlayerList
-              players={[...players].sort((a, b) => b.score - a.score)}
+              players={players}
               currentSessionId={currentSessionId}
               parentSessionId={parentSessionId}
             />
