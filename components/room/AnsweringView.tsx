@@ -8,9 +8,15 @@ import type { Player } from '@/types/game'
 
 const CANVAS_BG = '#1e3a5f'
 const PEN_COLOR = '#ffffff'
-const PEN_WIDTH = 4
 const CANVAS_W = 600
 const CANVAS_H = 480
+
+const PEN_WIDTHS = [
+  { label: '細', value: 3 },
+  { label: '中', value: 7 },
+  { label: '太', value: 14 },
+  { label: '極太', value: 24 },
+]
 
 const FONT_SIZES = [
   { label: 'S', value: 32 },
@@ -55,6 +61,7 @@ export function AnsweringView({
   onEndAnswering,
 }: AnsweringViewProps) {
   const [mode, setMode] = useState<Mode>('draw')
+  const [penWidth, setPenWidth] = useState(7)
   const [fontSize, setFontSize] = useState(24)
   const [textInput, setTextInput] = useState('')
   const [textAnchor, setTextAnchor] = useState<TextAnchor | null>(null)
@@ -144,7 +151,7 @@ export function AnsweringView({
     const ctx = canvasRef.current?.getContext('2d')
     if (!ctx) return
     ctx.strokeStyle = PEN_COLOR
-    ctx.lineWidth = PEN_WIDTH
+    ctx.lineWidth = penWidth
     ctx.lineCap = 'round'
     ctx.lineJoin = 'round'
     ctx.beginPath()
@@ -313,9 +320,25 @@ export function AnsweringView({
                   </button>
                 </div>
 
+                {/* 線の太さ (手書きモード時のみ) */}
+                {mode === 'draw' && (
+                  <div className="flex rounded-lg overflow-hidden border border-violet-200 ml-auto">
+                    {PEN_WIDTHS.map(({ label, value }) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setPenWidth(value)}
+                        className={`px-2.5 py-1.5 text-xs font-bold transition-colors ${penWidth === value ? 'bg-cyan-500 text-white' : 'bg-white text-slate-600 hover:bg-cyan-50'}`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
                 {/* フォントサイズ (テキストモード時のみ) */}
                 {mode === 'text' && (
-                  <div className="flex rounded-lg overflow-hidden border border-violet-200 ml-auto">
+                  <div className="flex rounded-lg overflow-hidden border border-violet-200">
                     {FONT_SIZES.map(({ label, value }) => (
                       <button
                         key={value}
