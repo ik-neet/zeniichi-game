@@ -238,6 +238,20 @@ export function AnsweringView({
 
   const handleTouchEnd = (e: React.TouchEvent<HTMLCanvasElement>) => {
     e.preventDefault()
+    if (mode === 'text') {
+      // e.preventDefault()によりonClickが発火しないため、touchendでテキスト配置を処理する
+      const canvas = canvasRef.current
+      const container = containerRef.current
+      if (!canvas || !container) return
+      const touch = e.changedTouches[0]
+      commitText()
+      const cp = getCanvasPos(canvas, touch)
+      const dp = getDisplayPos(container, touch)
+      setTextAnchor({ canvasX: cp.x, canvasY: cp.y, displayX: dp.x, displayY: dp.y })
+      setTextInput('')
+      setTimeout(() => floatingInputRef.current?.focus(), 0)
+      return
+    }
     if (isDrawing) saveDrawingState()
     setIsDrawing(false)
     lastPoint.current = null
@@ -372,14 +386,14 @@ export function AnsweringView({
           onClick={handleCanvasClick}
         />
 
+        {/* PC用: 透明フローティング入力（タッチ端末では使われない） */}
         {mode === 'text' && textAnchor && (
           <input
             ref={floatingInputRef}
             value={textInput}
             onChange={(e) => setTextInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') commitText() }}
-            onBlur={commitText}
-            className="absolute bg-transparent border-none outline-none caret-white p-0 m-0"
+            className="absolute bg-transparent border-none outline-none caret-white p-0 m-0 pointer-events-none opacity-0"
             style={{
               color: 'transparent',
               left: textAnchor.displayX,
@@ -389,7 +403,6 @@ export function AnsweringView({
               fontFamily: 'sans-serif',
               minWidth: 4,
               width: '80%',
-              maxWidth: `calc(100% - ${textAnchor.displayX}px - 8px)`,
             }}
             autoComplete="off"
           />
@@ -408,6 +421,29 @@ export function AnsweringView({
           </div>
         )}
       </div>
+
+      {/* テキストモード入力バー（タッチ端末でも確実に入力できる可視バー） */}
+      {mode === 'text' && textAnchor && (
+        <div className="flex-shrink-0 flex items-center gap-2 px-3 py-2 bg-slate-800 border-t border-slate-600">
+          <input
+            ref={floatingInputRef}
+            value={textInput}
+            onChange={(e) => setTextInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') commitText() }}
+            placeholder="テキストを入力..."
+            className="flex-1 bg-slate-700 text-white placeholder:text-slate-400 rounded-lg px-3 py-2 text-base border-none outline-none"
+            autoComplete="off"
+            autoFocus
+          />
+          <button
+            type="button"
+            onClick={commitText}
+            className="bg-violet-500 text-white rounded-lg px-4 py-2 font-bold text-sm flex-shrink-0"
+          >
+            確定
+          </button>
+        </div>
+      )}
 
       {/* 送信ボタン */}
       <div className="flex-shrink-0 p-3 bg-white border-t border-slate-100">
