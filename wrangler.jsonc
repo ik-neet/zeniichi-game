@@ -10,9 +10,9 @@
   },
   // 平文の環境変数はここに記述する。
   // シークレット (ADMIN_PASSWORD) は wrangler secret put で登録し、ここには書かない。
+  // ランタイム環境変数。NEXT_PUBLIC_* はビルド時にバンドルへ埋め込まれるためここには不要。
+  // ADMIN_PASSWORD は `wrangler secret put ADMIN_PASSWORD` で登録する（ここには書かない）。
   "vars": {
-    "NEXT_PUBLIC_SUPABASE_URL": "https://zrbebjshocydktpyrchc.supabase.co",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_-mUP1j03F11ROfKAQUtHXw_1NbTCjD4",
     "ADMIN_USERNAME": "admin"
   }
 }
