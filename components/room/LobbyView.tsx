@@ -14,8 +14,7 @@ interface LobbyViewProps {
   currentSessionId: string
   isHost: boolean
   settings: RoomSettings
-  onStart: () => Promise<void>
-  onSaveSettings: (settings: RoomSettings) => Promise<void>
+  onStart: (settings: RoomSettings) => Promise<void>
 }
 
 export function LobbyView({
@@ -25,9 +24,9 @@ export function LobbyView({
   isHost,
   settings,
   onStart,
-  onSaveSettings,
 }: LobbyViewProps) {
   const [starting, setStarting] = useState(false)
+  const [currentSettings, setCurrentSettings] = useState<RoomSettings>({ ...settings })
   const inviteUrl = typeof window !== 'undefined' ? `${window.location.origin}/room/${roomId}` : ''
 
   const handleCopyUrl = () => {
@@ -41,7 +40,7 @@ export function LobbyView({
     }
     setStarting(true)
     try {
-      await onStart()
+      await onStart(currentSettings)
     } finally {
       setStarting(false)
     }
@@ -106,7 +105,7 @@ export function LobbyView({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <GameSettingsForm settings={settings} onSave={onSaveSettings} />
+              <GameSettingsForm settings={settings} onChange={setCurrentSettings} />
             </CardContent>
           </Card>
         )}

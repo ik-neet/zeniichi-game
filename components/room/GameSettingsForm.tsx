@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import type { RoomSettings, ParentSelectionMode } from '@/types/game'
 
@@ -10,17 +9,12 @@ const PARENT_SELECTION_OPTIONS: { value: ParentSelectionMode; label: string }[] 
   { value: 'rotation', label: '順番' },
 ]
 
-export function GameSettingsForm({ settings, onSave }: { settings: RoomSettings; onSave: (settings: RoomSettings) => Promise<void> }) {
+export function GameSettingsForm({ settings, onChange }: { settings: RoomSettings; onChange: (settings: RoomSettings) => void }) {
   const [form, setForm] = useState<RoomSettings>({ ...settings })
-  const [saving, setSaving] = useState(false)
 
-  const handleSave = async () => {
-    setSaving(true)
-    try {
-      await onSave(form)
-    } finally {
-      setSaving(false)
-    }
+  const update = (next: RoomSettings) => {
+    setForm(next)
+    onChange(next)
   }
 
   return (
@@ -35,7 +29,7 @@ export function GameSettingsForm({ settings, onSave }: { settings: RoomSettings;
           type="button"
           role="switch"
           aria-checked={form.hostAlwaysParent}
-          onClick={() => setForm({ ...form, hostAlwaysParent: !form.hostAlwaysParent })}
+          onClick={() => update({ ...form, hostAlwaysParent: !form.hostAlwaysParent })}
           className={`btn-animated relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
             form.hostAlwaysParent
               ? 'bg-gradient-to-r from-violet-500 to-cyan-500'
@@ -59,7 +53,7 @@ export function GameSettingsForm({ settings, onSave }: { settings: RoomSettings;
               <button
                 key={option.value}
                 type="button"
-                onClick={() => setForm({ ...form, parentSelectionMode: option.value })}
+                onClick={() => update({ ...form, parentSelectionMode: option.value })}
                 className={`btn-animated p-2.5 text-xs rounded-lg border text-center font-semibold transition-all ${
                   form.parentSelectionMode === option.value
                     ? 'border-violet-400 bg-gradient-to-r from-violet-500 to-cyan-500 text-white shadow-md shadow-violet-200'
@@ -83,7 +77,7 @@ export function GameSettingsForm({ settings, onSave }: { settings: RoomSettings;
           type="button"
           role="switch"
           aria-checked={form.parentCanAnswer}
-          onClick={() => setForm({ ...form, parentCanAnswer: !form.parentCanAnswer })}
+          onClick={() => update({ ...form, parentCanAnswer: !form.parentCanAnswer })}
           className={`btn-animated relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
             form.parentCanAnswer
               ? 'bg-gradient-to-r from-violet-500 to-cyan-500'
@@ -97,15 +91,6 @@ export function GameSettingsForm({ settings, onSave }: { settings: RoomSettings;
           />
         </button>
       </div>
-
-      <Button
-        onClick={handleSave}
-        disabled={saving}
-        className="btn-animated w-full bg-gradient-to-r from-violet-500 to-cyan-500 hover:from-violet-600 hover:to-cyan-600 hover:shadow-lg hover:shadow-violet-200 text-white font-bold border-0"
-        size="sm"
-      >
-        {saving ? '保存中...' : '💾 設定を保存'}
-      </Button>
     </div>
   )
 }

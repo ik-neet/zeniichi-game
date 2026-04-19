@@ -193,15 +193,10 @@ export default function RoomPage() {
     await fetchInitialData(sessionId)
   }
 
-  const handleSaveSettings = async (settings: RoomSettings) => {
+  const handleStartGame = async (settings: RoomSettings) => {
     const supabase = getSupabaseClient()
     await supabase.from('rooms').update({ settings }).eq('id', roomId)
-    setRoom((prev) => prev ? { ...prev, settings } : prev)
-  }
-
-  const handleStartGame = async () => {
-    const supabase = getSupabaseClient()
-    const parentSessionId = determineParentSessionId(players, room!.settings, 1, null)
+    const parentSessionId = determineParentSessionId(players, settings, 1, null)
 
     await supabase.from('rooms').update({ status: 'playing' }).eq('id', roomId)
 
@@ -372,7 +367,6 @@ export default function RoomPage() {
         isHost={isHost}
         settings={room.settings}
         onStart={handleStartGame}
-        onSaveSettings={handleSaveSettings}
       />
     )
   }
@@ -404,8 +398,7 @@ export default function RoomPage() {
           isHost={false}
           settings={room!.settings}
           onStart={handleStartGame}
-          onSaveSettings={handleSaveSettings}
-        />
+          />
       )
     }
 
