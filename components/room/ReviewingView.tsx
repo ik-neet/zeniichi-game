@@ -62,15 +62,28 @@ export function ReviewingView({
               'border-l-green-400 bg-green-50',
             ]
             const colorClass = colors[i % colors.length]
+
+            let drawing: string | null = null
+            let text: string | null = null
+            try {
+              const parsed = JSON.parse(answer.content)
+              drawing = parsed.drawing ?? null
+              text = parsed.text || null
+            } catch {
+              text = answer.content
+            }
+
             return (
               <Card key={answer.id} className={`border-l-4 ${colorClass} border-t-0 border-r-0 border-b-0`}>
-                <CardContent className="pt-3 pb-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="text-xs font-semibold text-slate-500 shrink-0 pt-0.5">{answer.player_nickname}</span>
-                    <p className="text-sm font-bold text-slate-800 text-right">
-                      {answer.content}
-                    </p>
-                  </div>
+                <CardContent className="pt-3 pb-3 space-y-2">
+                  <span className="text-xs font-semibold text-slate-500 block">{answer.player_nickname}</span>
+                  {drawing && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={drawing} alt={answer.player_nickname} className="w-full rounded" />
+                  )}
+                  {text && (
+                    <p className="text-sm font-bold text-slate-800">{text}</p>
+                  )}
                 </CardContent>
               </Card>
             )

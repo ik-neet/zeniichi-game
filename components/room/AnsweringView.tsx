@@ -1,11 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import type { Player } from '@/types/game'
+
+const CANVAS_BG = '#1e3a5f'
+const PEN_COLOR = '#ffffff'
+const PEN_WIDTH = 3
 
 interface AnsweringViewProps {
   question: string
@@ -33,19 +37,125 @@ export function AnsweringView({
   onSubmitAnswer,
   onEndAnswering,
 }: AnsweringViewProps) {
-  const [answer, setAnswer] = useState('')
+  const [text, setText] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [ending, setEnding] = useState(false)
+  const [isDrawing, setIsDrawing] = useState(false)
+  const [hasDrawn, setHasDrawn] = useState(false)
+
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const lastPoint = useRef<{ x: number; y: number } | null>(null)
 
   const canAnswer = !isParent || parentCanAnswer
   const answerCount = answeredSessionIds.length
 
+  const initCanvas = useCallback(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    ctx.fillStyle = CANVAS_BG
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+  }, [])
+
+  useEffect(() => {
+    initCanvas()
+  }, [initCanvas])
+
+  const getPos = (canvas: HTMLCanvasElement, e: { clientX: number; clientY: number }) => {
+    const rect = canvas.getBoundingClientRect()
+    const scaleX = canvas.width / rect.width
+    const scaleY = canvas.height / rect.height
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY,
+    }
+  }
+
+  const drawLine = (from: { x: number; y: number }, to: { x: number; y: number }) => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    ctx.strokeStyle = PEN_COLOR
+    ctx.lineWidth = PEN_WIDTH
+    ctx.lineCap = 'round'
+    ctx.lineJoin = 'round'
+    ctx.beginPath()
+    ctx.moveTo(from.x, from.y)
+    ctx.lineTo(to.x, to.y)
+    ctx.stroke()
+  }
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const pos = getPos(canvas, e.nativeEvent)
+    setIsDrawing(true)
+    setHasDrawn(true)
+    lastPoint.current = pos
+    drawLine(pos, pos)
+  }
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDrawing || !lastPoint.current) return
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const pos = getPos(canvas, e.nativeEvent)
+    drawLine(lastPoint.current, pos)
+    lastPoint.current = pos
+  }
+
+  const handleMouseUp = () => {
+    setIsDrawing(false)
+    lastPoint.current = null
+  }
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault()
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const touch = e.touches[0]
+    const pos = getPos(canvas, touch)
+    setIsDrawing(true)
+    setHasDrawn(true)
+    lastPoint.current = pos
+    drawLine(pos, pos)
+  }
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault()
+    if (!isDrawing || !lastPoint.current) return
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const touch = e.touches[0]
+    const pos = getPos(canvas, touch)
+    drawLine(lastPoint.current, pos)
+    lastPoint.current = pos
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault()
+    setIsDrawing(false)
+    lastPoint.current = null
+  }
+
+  const handleClear = () => {
+    setHasDrawn(false)
+    initCanvas()
+  }
+
   const handleSubmit = async () => {
-    if (!answer.trim()) return
+    const canvas = canvasRef.current
+    const drawing = canvas ? canvas.toDataURL('image/png') : null
+    if (!hasDrawn && !text.trim()) return
     setSubmitting(true)
     try {
-      await onSubmitAnswer(answer.trim())
-      setAnswer('')
+      const content = JSON.stringify({ drawing, text: text.trim() })
+      await onSubmitAnswer(content)
+      setText('')
+      setHasDrawn(false)
+      initCanvas()
     } finally {
       setSubmitting(false)
     }
@@ -89,17 +199,46 @@ export function AnsweringView({
         {canAnswer && !hasAnswered && (
           <Card className="border-violet-200 shadow-sm shadow-violet-100">
             <CardContent className="pt-4 space-y-3">
-              <Textarea
-                placeholder="回答を入力してください..."
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                className="resize-none border-violet-200 focus:border-violet-400 focus:ring-violet-200"
-                rows={3}
-                autoFocus
+              {/* キャンバス */}
+              <div className="relative rounded-lg overflow-hidden" style={{ background: CANVAS_BG }}>
+                <canvas
+                  ref={canvasRef}
+                  width={600}
+                  height={300}
+                  className="w-full touch-none cursor-crosshair block"
+                  onMouseDown={handleMouseDown}
+                  onMouseMove={handleMouseMove}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseUp}
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
+                />
+                <button
+                  type="button"
+                  onClick={handleClear}
+                  className="absolute top-2 right-2 text-xs text-white/70 hover:text-white bg-white/10 hover:bg-white/20 px-2 py-1 rounded transition-colors"
+                >
+                  クリア
+                </button>
+                {!hasDrawn && (
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <p className="text-white/30 text-sm select-none">ここに手書きで回答してください</p>
+                  </div>
+                )}
+              </div>
+
+              {/* テキスト入力 */}
+              <Input
+                placeholder="テキストで補足（任意）"
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                className="border-violet-200 focus:border-violet-400 focus:ring-violet-200"
               />
+
               <Button
                 onClick={handleSubmit}
-                disabled={!answer.trim() || submitting}
+                disabled={(!hasDrawn && !text.trim()) || submitting}
                 className="btn-animated w-full bg-gradient-to-r from-violet-500 to-cyan-500 hover:from-violet-600 hover:to-cyan-600 hover:shadow-lg hover:shadow-violet-200 text-white font-bold border-0"
               >
                 {submitting ? '送信中...' : '✏️ 回答する'}
