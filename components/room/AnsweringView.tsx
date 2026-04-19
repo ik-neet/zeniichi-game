@@ -368,8 +368,9 @@ export function AnsweringView({
                     onChange={(e) => setTextInput(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter') commitText() }}
                     onBlur={commitText}
-                    className="absolute bg-transparent border-none outline-none text-white caret-white p-0 m-0"
+                    className="absolute bg-transparent border-none outline-none caret-white p-0 m-0"
                     style={{
+                      color: 'transparent',
                       left: textAnchor.displayX,
                       top: textAnchor.displayY,
                       fontSize: `${fontSize * (containerRef.current?.getBoundingClientRect().width ?? CANVAS_W) / CANVAS_W}px`,
