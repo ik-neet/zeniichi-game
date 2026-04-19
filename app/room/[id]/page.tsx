@@ -344,17 +344,53 @@ export default function RoomPage() {
   if (!currentRound) return null
 
   if (currentRound.status === 'questioning') {
-    return (
-      <QuestioningView
-        isParent={isParent}
-        isHost={isHost}
-        parentNickname={parentNickname}
-        roundNumber={currentRound.round_number}
-        presetQuestions={presetQuestions}
-        onSubmitQuestion={handleSubmitQuestion}
-        onEndGame={handleEndGame}
-      />
-    )
+    if (isParent) {
+      return (
+        <QuestioningView
+          isParent={isParent}
+          isHost={isHost}
+          parentNickname={parentNickname}
+          roundNumber={currentRound.round_number}
+          presetQuestions={presetQuestions}
+          onSubmitQuestion={handleSubmitQuestion}
+          onEndGame={handleEndGame}
+        />
+      )
+    }
+
+    // 子プレイヤー: ラウンド1なら待ち受け画面、2以降は前ラウンドの結果画面を維持
+    if (currentRound.round_number === 1) {
+      return (
+        <LobbyView
+          roomId={roomId}
+          players={players}
+          currentSessionId={sessionId}
+          isHost={false}
+          settings={room!.settings}
+          onStart={handleStartGame}
+          onSaveSettings={handleSaveSettings}
+        />
+      )
+    }
+
+    const prevRound = allRounds.find((r) => r.round_number === currentRound.round_number - 1)
+    if (prevRound) {
+      return (
+        <JudgingView
+          roundNumber={prevRound.round_number}
+          result={prevRound.result}
+          players={players}
+          currentSessionId={sessionId}
+          parentSessionId={prevRound.parent_session_id}
+          isParent={false}
+          isHost={isHost}
+          matchCount={matchCount}
+          noMatchCount={noMatchCount}
+          onNextRound={handleNextRound}
+          onEndGame={handleEndGame}
+        />
+      )
+    }
   }
 
   if (currentRound.status === 'answering') {
