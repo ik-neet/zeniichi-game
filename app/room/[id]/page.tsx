@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { getSupabaseClient } from '@/lib/supabase'
 import { getOrCreateSessionId } from '@/lib/session'
 import { determineParentSessionId } from '@/lib/game'
@@ -15,6 +15,7 @@ import type { Room, Player, Round, Answer, PresetQuestion, RoomSettings } from '
 
 export default function RoomPage() {
   const params = useParams()
+  const router = useRouter()
   const roomId = params.id as string
 
   const [sessionId, setSessionId] = useState<string>('')
@@ -225,6 +226,18 @@ export default function RoomPage() {
     await supabase.from('rounds').update({ status: 'judging', result }).eq('id', currentRound!.id)
   }
 
+  const handleEndGame = async () => {
+    const supabase = getSupabaseClient()
+    const roundIds = allRounds.map((r) => r.id)
+    if (roundIds.length > 0) {
+      await supabase.from('answers').delete().in('round_id', roundIds)
+      await supabase.from('rounds').delete().eq('room_id', roomId)
+    }
+    await supabase.from('players').delete().eq('room_id', roomId)
+    await supabase.from('rooms').delete().eq('id', roomId)
+    router.push('/')
+  }
+
   const handleNextRound = async () => {
     const supabase = getSupabaseClient()
     await supabase.from('rounds').update({ status: 'completed' }).eq('id', currentRound!.id)
@@ -319,10 +332,12 @@ export default function RoomPage() {
     return (
       <QuestioningView
         isParent={isParent}
+        isHost={isHost}
         parentNickname={parentNickname}
         roundNumber={currentRound.round_number}
         presetQuestions={presetQuestions}
         onSubmitQuestion={handleSubmitQuestion}
+        onEndGame={handleEndGame}
       />
     )
   }
@@ -370,6 +385,7 @@ export default function RoomPage() {
         matchCount={matchCount}
         noMatchCount={noMatchCount}
         onNextRound={handleNextRound}
+        onEndGame={handleEndGame}
       />
     )
   }

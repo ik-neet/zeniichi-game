@@ -9,22 +9,36 @@ import type { PresetQuestion } from '@/types/game'
 
 interface QuestioningViewProps {
   isParent: boolean
+  isHost: boolean
   parentNickname: string
   roundNumber: number
   presetQuestions: PresetQuestion[]
   onSubmitQuestion: (question: string) => Promise<void>
+  onEndGame: () => Promise<void>
 }
 
 export function QuestioningView({
   isParent,
+  isHost,
   parentNickname,
   roundNumber,
   presetQuestions,
   onSubmitQuestion,
+  onEndGame,
 }: QuestioningViewProps) {
   const [question, setQuestion] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [ending, setEnding] = useState(false)
   const [usePreset, setUsePreset] = useState(false)
+
+  const handleEndGame = async () => {
+    setEnding(true)
+    try {
+      await onEndGame()
+    } finally {
+      setEnding(false)
+    }
+  }
 
   const handleSubmit = async (q: string) => {
     if (!q.trim()) return
@@ -47,6 +61,16 @@ export function QuestioningView({
           <p className="text-slate-500">
             <span className="font-semibold text-violet-600">{parentNickname}</span>さんがお題を考えています...
           </p>
+          {isHost && (
+            <Button
+              onClick={handleEndGame}
+              disabled={ending}
+              variant="outline"
+              className="btn-animated mt-4 border-red-300 text-red-500 hover:bg-red-50 hover:border-red-400 font-semibold"
+            >
+              {ending ? '終了中...' : '🚪 ゲームを終了する'}
+            </Button>
+          )}
         </div>
       </main>
     )
@@ -132,6 +156,17 @@ export function QuestioningView({
               )}
             </CardContent>
           </Card>
+        )}
+
+        {isHost && (
+          <Button
+            onClick={handleEndGame}
+            disabled={ending}
+            variant="outline"
+            className="btn-animated w-full border-red-300 text-red-500 hover:bg-red-50 hover:border-red-400 font-semibold"
+          >
+            {ending ? '終了中...' : '🚪 ゲームを終了する'}
+          </Button>
         )}
       </div>
     </main>

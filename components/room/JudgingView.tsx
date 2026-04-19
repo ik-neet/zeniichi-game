@@ -17,6 +17,7 @@ interface JudgingViewProps {
   matchCount: number
   noMatchCount: number
   onNextRound: () => Promise<void>
+  onEndGame: () => Promise<void>
 }
 
 export function JudgingView({
@@ -30,8 +31,10 @@ export function JudgingView({
   matchCount,
   noMatchCount,
   onNextRound,
+  onEndGame,
 }: JudgingViewProps) {
   const [loading, setLoading] = useState(false)
+  const [ending, setEnding] = useState(false)
   const isMatch = result === 'match'
 
   const handleNextRound = async () => {
@@ -40,6 +43,15 @@ export function JudgingView({
       await onNextRound()
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleEndGame = async () => {
+    setEnding(true)
+    try {
+      await onEndGame()
+    } finally {
+      setEnding(false)
     }
   }
 
@@ -117,6 +129,17 @@ export function JudgingView({
           <p className="text-sm text-center text-slate-400 py-2">
             次のラウンドを待っています...
           </p>
+        )}
+
+        {isHost && (
+          <Button
+            onClick={handleEndGame}
+            disabled={ending}
+            variant="outline"
+            className="btn-animated w-full border-red-300 text-red-500 hover:bg-red-50 hover:border-red-400 font-semibold"
+          >
+            {ending ? '終了中...' : '🚪 ゲームを終了する'}
+          </Button>
         )}
       </div>
     </main>
