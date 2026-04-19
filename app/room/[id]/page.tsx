@@ -29,8 +29,10 @@ export default function RoomPage() {
   const [notFound, setNotFound] = useState(false)
   const [expired, setExpired] = useState(false)
   const [gameEnded, setGameEnded] = useState(false)
+  const [gameResults, setGameResults] = useState<{ matchCount: number; noMatchCount: number; totalRounds: number } | null>(null)
 
   const channelRef = useRef<ReturnType<ReturnType<typeof getSupabaseClient>['channel']> | null>(null)
+  const allRoundsRef = useRef<Round[]>([])
 
   // 初期データ取得
   const fetchInitialData = useCallback(async (sid: string) => {
@@ -90,6 +92,12 @@ export default function RoomPage() {
           if (payload.eventType === 'UPDATE') {
             setRoom(payload.new as Room)
           } else if (payload.eventType === 'DELETE') {
+            const rounds = allRoundsRef.current
+            setGameResults({
+              matchCount: rounds.filter((r) => r.result === 'match').length,
+              noMatchCount: rounds.filter((r) => r.result === 'no_match').length,
+              totalRounds: rounds.length,
+            })
             setGameEnded(true)
           }
         }
@@ -132,6 +140,8 @@ export default function RoomPage() {
 
     channelRef.current = channel
   }, [roomId, currentRound])
+
+  useEffect(() => { allRoundsRef.current = allRounds }, [allRounds])
 
   useEffect(() => {
     const sid = getOrCreateSessionId()
@@ -230,6 +240,11 @@ export default function RoomPage() {
   }
 
   const handleEndGame = async () => {
+    setGameResults({
+      matchCount: allRounds.filter((r) => r.result === 'match').length,
+      noMatchCount: allRounds.filter((r) => r.result === 'no_match').length,
+      totalRounds: allRounds.length,
+    })
     const supabase = getSupabaseClient()
     const roundIds = allRounds.map((r) => r.id)
     if (roundIds.length > 0) {
@@ -291,10 +306,31 @@ export default function RoomPage() {
   if (gameEnded) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-white to-cyan-50 p-4">
-        <div className="text-center space-y-4 max-w-sm">
+        <div className="text-center space-y-6 max-w-sm w-full">
           <div className="text-6xl">🏁</div>
-          <p className="text-2xl font-black text-slate-700">ホストがゲームを終了しました</p>
-          <a href="/" className="inline-block mt-2 text-sm text-violet-500 hover:underline">トップへ戻る</a>
+          <div>
+            <p className="text-2xl font-black text-slate-700">ゲーム終了！</p>
+            {gameResults && (
+              <p className="text-sm text-slate-400 mt-1">{gameResults.totalRounds} ラウンド</p>
+            )}
+          </div>
+          {gameResults && (
+            <div className="bg-white rounded-2xl shadow-md p-6 space-y-4">
+              <p className="text-xs text-slate-400 font-semibold tracking-widest">最終結果</p>
+              <div className="flex items-center justify-center gap-8">
+                <div className="text-center">
+                  <p className="text-xs text-emerald-600 font-semibold mb-1">全員一致</p>
+                  <p className="text-4xl font-black text-emerald-500">{gameResults.matchCount}</p>
+                </div>
+                <div className="w-px h-12 bg-slate-200" />
+                <div className="text-center">
+                  <p className="text-xs text-rose-500 font-semibold mb-1">不一致</p>
+                  <p className="text-4xl font-black text-rose-400">{gameResults.noMatchCount}</p>
+                </div>
+              </div>
+            </div>
+          )}
+          <a href="/" className="inline-block text-sm text-violet-500 hover:underline">トップへ戻る</a>
         </div>
       </main>
     )
