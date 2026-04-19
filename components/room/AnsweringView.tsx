@@ -9,7 +9,9 @@ import type { Player } from '@/types/game'
 
 const CANVAS_BG = '#1e3a5f'
 const PEN_COLOR = '#ffffff'
-const PEN_WIDTH = 3
+const PEN_WIDTH = 4
+const CANVAS_W = 600
+const CANVAS_H = 480
 
 interface AnsweringViewProps {
   question: string
@@ -41,41 +43,88 @@ export function AnsweringView({
   const [submitting, setSubmitting] = useState(false)
   const [ending, setEnding] = useState(false)
   const [isDrawing, setIsDrawing] = useState(false)
-  const [hasDrawn, setHasDrawn] = useState(false)
+  const [hasContent, setHasContent] = useState(false)
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const lastPoint = useRef<{ x: number; y: number } | null>(null)
+  // Stores drawing pixels without text overlay
+  const savedDrawing = useRef<ImageData | null>(null)
 
   const canAnswer = !isParent || parentCanAnswer
   const answerCount = answeredSessionIds.length
 
+  const fillBackground = (ctx: CanvasRenderingContext2D) => {
+    ctx.fillStyle = CANVAS_BG
+    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H)
+  }
+
+  const renderTextOverlay = useCallback((ctx: CanvasRenderingContext2D, currentText: string) => {
+    if (!currentText) return
+    const padding = 14
+    const fontSize = 22
+    const textAreaHeight = fontSize + padding * 2
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.45)'
+    ctx.fillRect(0, CANVAS_H - textAreaHeight, CANVAS_W, textAreaHeight)
+    ctx.font = `bold ${fontSize}px sans-serif`
+    ctx.fillStyle = '#ffffff'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(currentText, CANVAS_W / 2, CANVAS_H - textAreaHeight / 2, CANVAS_W - padding * 2)
+  }, [])
+
+  const redrawWithText = useCallback((currentText: string) => {
+    const canvas = canvasRef.current
+    const ctx = canvas?.getContext('2d')
+    if (!canvas || !ctx) return
+    if (savedDrawing.current) {
+      ctx.putImageData(savedDrawing.current, 0, 0)
+    } else {
+      fillBackground(ctx)
+    }
+    renderTextOverlay(ctx, currentText)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [renderTextOverlay])
+
+  const saveDrawingState = useCallback(() => {
+    const canvas = canvasRef.current
+    const ctx = canvas?.getContext('2d')
+    if (!canvas || !ctx) return
+    // Save without text: restore base, save, then re-apply text
+    if (savedDrawing.current) {
+      ctx.putImageData(savedDrawing.current, 0, 0)
+    }
+    savedDrawing.current = ctx.getImageData(0, 0, CANVAS_W, CANVAS_H)
+    renderTextOverlay(ctx, text)
+  }, [text, renderTextOverlay])
+
   const initCanvas = useCallback(() => {
     const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-    ctx.fillStyle = CANVAS_BG
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    const ctx = canvas?.getContext('2d')
+    if (!canvas || !ctx) return
+    fillBackground(ctx)
+    savedDrawing.current = ctx.getImageData(0, 0, CANVAS_W, CANVAS_H)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
     initCanvas()
   }, [initCanvas])
 
+  useEffect(() => {
+    redrawWithText(text)
+  }, [text, redrawWithText])
+
   const getPos = (canvas: HTMLCanvasElement, e: { clientX: number; clientY: number }) => {
     const rect = canvas.getBoundingClientRect()
-    const scaleX = canvas.width / rect.width
-    const scaleY = canvas.height / rect.height
     return {
-      x: (e.clientX - rect.left) * scaleX,
-      y: (e.clientY - rect.top) * scaleY,
+      x: (e.clientX - rect.left) * (CANVAS_W / rect.width),
+      y: (e.clientY - rect.top) * (CANVAS_H / rect.height),
     }
   }
 
   const drawLine = (from: { x: number; y: number }, to: { x: number; y: number }) => {
     const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
+    const ctx = canvas?.getContext('2d')
     if (!ctx) return
     ctx.strokeStyle = PEN_COLOR
     ctx.lineWidth = PEN_WIDTH
@@ -92,7 +141,7 @@ export function AnsweringView({
     if (!canvas) return
     const pos = getPos(canvas, e.nativeEvent)
     setIsDrawing(true)
-    setHasDrawn(true)
+    setHasContent(true)
     lastPoint.current = pos
     drawLine(pos, pos)
   }
@@ -107,6 +156,7 @@ export function AnsweringView({
   }
 
   const handleMouseUp = () => {
+    if (isDrawing) saveDrawingState()
     setIsDrawing(false)
     lastPoint.current = null
   }
@@ -115,10 +165,9 @@ export function AnsweringView({
     e.preventDefault()
     const canvas = canvasRef.current
     if (!canvas) return
-    const touch = e.touches[0]
-    const pos = getPos(canvas, touch)
+    const pos = getPos(canvas, e.touches[0])
     setIsDrawing(true)
-    setHasDrawn(true)
+    setHasContent(true)
     lastPoint.current = pos
     drawLine(pos, pos)
   }
@@ -128,33 +177,45 @@ export function AnsweringView({
     if (!isDrawing || !lastPoint.current) return
     const canvas = canvasRef.current
     if (!canvas) return
-    const touch = e.touches[0]
-    const pos = getPos(canvas, touch)
+    const pos = getPos(canvas, e.touches[0])
     drawLine(lastPoint.current, pos)
     lastPoint.current = pos
   }
 
   const handleTouchEnd = (e: React.TouchEvent<HTMLCanvasElement>) => {
     e.preventDefault()
+    if (isDrawing) saveDrawingState()
     setIsDrawing(false)
     lastPoint.current = null
   }
 
   const handleClear = () => {
-    setHasDrawn(false)
+    setHasContent(false)
+    setText('')
     initCanvas()
+  }
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value
+    setText(val)
+    if (val) setHasContent(true)
   }
 
   const handleSubmit = async () => {
     const canvas = canvasRef.current
-    const drawing = canvas ? canvas.toDataURL('image/png') : null
-    if (!hasDrawn && !text.trim()) return
+    if (!canvas || !hasContent) return
     setSubmitting(true)
     try {
-      const content = JSON.stringify({ drawing, text: text.trim() })
-      await onSubmitAnswer(content)
+      // Ensure text is rendered before capturing
+      const ctx = canvas.getContext('2d')
+      if (ctx && savedDrawing.current) {
+        ctx.putImageData(savedDrawing.current, 0, 0)
+        renderTextOverlay(ctx, text)
+      }
+      const drawing = canvas.toDataURL('image/png')
+      await onSubmitAnswer(JSON.stringify({ drawing, text }))
       setText('')
-      setHasDrawn(false)
+      setHasContent(false)
       initCanvas()
     } finally {
       setSubmitting(false)
@@ -203,8 +264,8 @@ export function AnsweringView({
               <div className="relative rounded-lg overflow-hidden" style={{ background: CANVAS_BG }}>
                 <canvas
                   ref={canvasRef}
-                  width={600}
-                  height={300}
+                  width={CANVAS_W}
+                  height={CANVAS_H}
                   className="w-full touch-none cursor-crosshair block"
                   onMouseDown={handleMouseDown}
                   onMouseMove={handleMouseMove}
@@ -221,24 +282,24 @@ export function AnsweringView({
                 >
                   クリア
                 </button>
-                {!hasDrawn && (
+                {!hasContent && (
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <p className="text-white/30 text-sm select-none">ここに手書きで回答してください</p>
                   </div>
                 )}
               </div>
 
-              {/* テキスト入力 */}
+              {/* テキスト入力（キャンバス下部に画像として合成） */}
               <Input
-                placeholder="テキストで補足（任意）"
+                placeholder="テキストを入力するとキャンバスに表示されます"
                 value={text}
-                onChange={(e) => setText(e.target.value)}
+                onChange={handleTextChange}
                 className="border-violet-200 focus:border-violet-400 focus:ring-violet-200"
               />
 
               <Button
                 onClick={handleSubmit}
-                disabled={(!hasDrawn && !text.trim()) || submitting}
+                disabled={!hasContent || submitting}
                 className="btn-animated w-full bg-gradient-to-r from-violet-500 to-cyan-500 hover:from-violet-600 hover:to-cyan-600 hover:shadow-lg hover:shadow-violet-200 text-white font-bold border-0"
               >
                 {submitting ? '送信中...' : '✏️ 回答する'}
