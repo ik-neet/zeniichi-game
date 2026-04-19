@@ -412,6 +412,21 @@ export function AnsweringView({
             onClick={handleCanvasClick}
           />
 
+          {/* テキストカーソル表示 */}
+          {mode === 'text' && textAnchor && (
+            <div
+              className="absolute pointer-events-none animate-pulse"
+              style={{
+                left: textAnchor.displayX,
+                top: textAnchor.displayY,
+                width: 2,
+                height: `${fontSize * (containerRef.current?.getBoundingClientRect().width ?? CANVAS_W) / CANVAS_W}px`,
+                background: PEN_COLOR,
+                transform: 'translateX(-1px)',
+              }}
+            />
+          )}
+
           {/* PC用: 透明フローティング入力（タッチ端末では使われない） */}
           {mode === 'text' && textAnchor && (
             <input
