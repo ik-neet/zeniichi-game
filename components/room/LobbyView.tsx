@@ -73,7 +73,7 @@ export function LobbyView({
                 variant="outline"
                 size="sm"
                 onClick={handleCopyUrl}
-                className="btn-animated border-violet-300 text-violet-600 hover:bg-violet-50 hover:border-violet-400 hover:shadow-md hover:shadow-violet-100"
+                className="btn-animated border-violet-300 text-violet-600 hover:bg-violet-50 hover:border-violet-400 hover:shadow-md hover:shadow-violet-100 bg-white"
               >
                 コピー
               </Button>
