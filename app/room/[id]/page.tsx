@@ -413,6 +413,7 @@ export default function RoomPage() {
           parentSessionId={prevRound.parent_session_id}
           isParent={false}
           isHost={false}
+          hostAlwaysParent={room?.settings.hostAlwaysParent ?? true}
           matchCount={matchCount}
           noMatchCount={noMatchCount}
           onNextRound={handleNextRound}
@@ -462,6 +463,7 @@ export default function RoomPage() {
         parentSessionId={parentSessionId}
         isParent={isParent}
         isHost={isHost}
+        hostAlwaysParent={room?.settings.hostAlwaysParent ?? true}
         matchCount={matchCount}
         noMatchCount={noMatchCount}
         onNextRound={handleNextRound}

@@ -30,6 +30,23 @@ export function QuestioningView({
   const [submitting, setSubmitting] = useState(false)
   const [ending, setEnding] = useState(false)
   const [usePreset, setUsePreset] = useState(false)
+  const [displayedPresets, setDisplayedPresets] = useState<PresetQuestion[]>([])
+
+  const pickRandomPresets = () => {
+    const shuffled = [...presetQuestions].sort(() => Math.random() - 0.5)
+    setDisplayedPresets(shuffled.slice(0, 10))
+  }
+
+  const handleSwitchToPreset = () => {
+    setUsePreset(true)
+    pickRandomPresets()
+  }
+
+  const handleRandomSubmit = () => {
+    if (displayedPresets.length === 0) return
+    const picked = displayedPresets[Math.floor(Math.random() * displayedPresets.length)]
+    handleSubmit(picked.text)
+  }
 
   const handleEndGame = async () => {
     setEnding(true)
@@ -100,7 +117,7 @@ export function QuestioningView({
           </button>
           <button
             type="button"
-            onClick={() => setUsePreset(true)}
+            onClick={handleSwitchToPreset}
             className={`btn-animated flex-1 py-2 text-sm rounded-lg font-semibold transition-all ${
               usePreset
                 ? 'bg-gradient-to-r from-violet-500 to-cyan-500 text-white shadow-md shadow-violet-200'
@@ -134,7 +151,17 @@ export function QuestioningView({
         ) : (
           <Card className="border-violet-200 shadow-sm shadow-violet-100">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-violet-500">プリセット質問</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm text-violet-500">プリセット質問</CardTitle>
+                <button
+                  type="button"
+                  onClick={pickRandomPresets}
+                  disabled={submitting}
+                  className="text-xs text-violet-400 hover:text-violet-600 transition-colors"
+                >
+                  🔄 質問を再取得
+                </button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-2">
               {presetQuestions.length === 0 ? (
@@ -142,17 +169,26 @@ export function QuestioningView({
                   プリセット質問がありません
                 </p>
               ) : (
-                presetQuestions.map((q) => (
-                  <button
-                    key={q.id}
-                    type="button"
-                    onClick={() => handleSubmit(q.text)}
-                    disabled={submitting}
-                    className="btn-animated w-full text-left p-3 rounded-lg border border-violet-100 bg-violet-50 hover:bg-violet-100 hover:border-violet-300 hover:shadow-md hover:shadow-violet-100 text-sm text-slate-700 font-medium transition-all"
+                <>
+                  {displayedPresets.map((q) => (
+                    <button
+                      key={q.id}
+                      type="button"
+                      onClick={() => handleSubmit(q.text)}
+                      disabled={submitting}
+                      className="btn-animated w-full text-left p-3 rounded-lg border border-violet-100 bg-violet-50 hover:bg-violet-100 hover:border-violet-300 hover:shadow-md hover:shadow-violet-100 text-sm text-slate-700 font-medium transition-all"
+                    >
+                      {q.text}
+                    </button>
+                  ))}
+                  <Button
+                    onClick={handleRandomSubmit}
+                    disabled={submitting || displayedPresets.length === 0}
+                    className="btn-animated w-full bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-500 hover:to-orange-500 hover:shadow-lg hover:shadow-amber-200 text-white font-bold border-0 mt-2"
                   >
-                    {q.text}
-                  </button>
-                ))
+                    {submitting ? '出題中...' : '🎲 ランダムに質問を出す'}
+                  </Button>
+                </>
               )}
             </CardContent>
           </Card>

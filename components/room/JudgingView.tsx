@@ -14,6 +14,7 @@ interface JudgingViewProps {
   parentSessionId: string
   isParent: boolean
   isHost: boolean
+  hostAlwaysParent: boolean
   matchCount: number
   noMatchCount: number
   onNextRound: () => Promise<void>
@@ -28,6 +29,7 @@ export function JudgingView({
   parentSessionId,
   isParent,
   isHost,
+  hostAlwaysParent,
   matchCount,
   noMatchCount,
   onNextRound,
@@ -114,8 +116,8 @@ export function JudgingView({
           </CardContent>
         </Card>
 
-        {/* 次のラウンドへ (親 or ホストが操作) */}
-        {(isParent || isHost) && (
+        {/* 次のラウンドへ: hostAlwaysParent=false の場合はホストのみ、それ以外は親 or ホスト */}
+        {(hostAlwaysParent ? (isParent || isHost) : isHost) && (
           <Button
             onClick={handleNextRound}
             disabled={loading}
@@ -125,7 +127,7 @@ export function JudgingView({
           </Button>
         )}
 
-        {!isParent && !isHost && (
+        {!(hostAlwaysParent ? (isParent || isHost) : isHost) && (
           <p className="text-sm text-center text-slate-400 py-2">
             次のラウンドを待っています...
           </p>

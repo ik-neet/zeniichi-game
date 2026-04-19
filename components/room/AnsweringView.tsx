@@ -396,7 +396,7 @@ export function AnsweringView({
       </div>
 
       {/* キャンバス: PCで高さが抑制されるようmax-widthで制限し中央揃え */}
-      <div className="flex justify-center bg-slate-950 py-3 px-4">
+      <div className="flex justify-center bg-slate-950 py-3">
         <div
           ref={containerRef}
           className="relative overflow-hidden w-full ring-2 ring-white/25 rounded-sm shadow-lg shadow-black/60"
