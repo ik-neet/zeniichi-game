@@ -73,49 +73,58 @@ export default function AdminPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 dark:bg-slate-900 p-4">
+    <main className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-cyan-50 p-4">
       <div className="max-w-2xl mx-auto space-y-6 pt-8">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-50">管理者画面</h1>
-            <p className="text-sm text-slate-500 mt-1">プリセット質問の管理</p>
+            <h1 className="text-3xl font-black bg-gradient-to-r from-violet-600 to-cyan-500 bg-clip-text text-transparent">
+              管理者画面
+            </h1>
+            <p className="text-sm text-violet-400 mt-1">プリセット質問の管理</p>
           </div>
           <Button
             variant="outline"
             size="sm"
             onClick={handleLogout}
             disabled={loggingOut}
+            className="border-violet-300 text-violet-600 hover:bg-violet-50 hover:border-violet-400"
           >
             {loggingOut ? 'ログアウト中...' : 'ログアウト'}
           </Button>
         </div>
 
         {/* 質問追加フォーム */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">質問を追加</CardTitle>
+        <Card className="border-violet-200 shadow-sm shadow-violet-100">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-violet-500">質問を追加</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleAdd} className="space-y-3">
               <div className="space-y-1.5">
-                <Label htmlFor="text">質問文</Label>
+                <Label htmlFor="text" className="text-violet-700 font-medium">質問文</Label>
                 <Input
                   id="text"
                   placeholder="例: 好きな食べ物は？"
                   value={newText}
                   onChange={(e) => setNewText(e.target.value)}
+                  className="border-violet-200 focus:border-violet-400 focus:ring-violet-200"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="category">カテゴリ（省略可）</Label>
+                <Label htmlFor="category" className="text-violet-700 font-medium">カテゴリ（省略可）</Label>
                 <Input
                   id="category"
                   placeholder="例: food, lifestyle, preference"
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value)}
+                  className="border-violet-200 focus:border-violet-400 focus:ring-violet-200"
                 />
               </div>
-              <Button type="submit" disabled={!newText.trim() || saving}>
+              <Button
+                type="submit"
+                disabled={!newText.trim() || saving}
+                className="btn-animated bg-gradient-to-r from-violet-500 to-cyan-500 hover:from-violet-600 hover:to-cyan-600 hover:shadow-lg hover:shadow-violet-200 text-white font-bold border-0"
+              >
                 {saving ? '追加中...' : '追加する'}
               </Button>
             </form>
@@ -123,27 +132,29 @@ export default function AdminPage() {
         </Card>
 
         {/* 質問一覧 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">質問一覧 ({questions.length}件)</CardTitle>
+        <Card className="border-violet-200 shadow-sm shadow-violet-100">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-violet-500">
+              質問一覧 ({questions.length}件)
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <p className="text-sm text-slate-400 text-center py-4">読み込み中...</p>
+              <p className="text-sm text-violet-300 text-center py-4">読み込み中...</p>
             ) : questions.length === 0 ? (
-              <p className="text-sm text-slate-400 text-center py-4">質問がありません</p>
+              <p className="text-sm text-violet-300 text-center py-4">質問がありません</p>
             ) : (
               <div className="space-y-2">
                 {questions.map((q) => (
                   <div
                     key={q.id}
-                    className="flex items-center justify-between gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700"
+                    className="flex items-center justify-between gap-3 p-3 rounded-lg border border-violet-100 bg-white"
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      <Badge variant="outline" className="text-xs shrink-0">
+                      <Badge className="text-xs shrink-0 bg-violet-100 text-violet-600 border-violet-200 hover:bg-violet-100">
                         {q.category}
                       </Badge>
-                      <span className="text-sm text-slate-700 dark:text-slate-300 truncate">
+                      <span className="text-sm text-slate-700 truncate">
                         {q.text}
                       </span>
                     </div>
@@ -152,7 +163,7 @@ export default function AdminPage() {
                       size="sm"
                       onClick={() => handleDelete(q.id)}
                       disabled={deletingId === q.id}
-                      className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950 shrink-0"
+                      className="text-red-400 hover:text-red-600 hover:bg-red-50 shrink-0"
                     >
                       {deletingId === q.id ? '削除中...' : '削除'}
                     </Button>
