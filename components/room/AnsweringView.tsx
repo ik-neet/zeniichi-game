@@ -62,7 +62,7 @@ export function AnsweringView({
 }: AnsweringViewProps) {
   const [mode, setMode] = useState<Mode>('draw')
   const [penWidth, setPenWidth] = useState(7)
-  const [fontSize, setFontSize] = useState(24)
+  const [fontSize, setFontSize] = useState(48)
   const [textInput, setTextInput] = useState('')
   const [textAnchor, setTextAnchor] = useState<TextAnchor | null>(null)
   const [submitting, setSubmitting] = useState(false)
