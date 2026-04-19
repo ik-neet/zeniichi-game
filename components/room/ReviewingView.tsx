@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import type { Answer } from '@/types/game'
@@ -28,19 +28,6 @@ function parseAnswer(content: string): { drawing: string | null; text: string | 
 export function ReviewingView({ question, roundNumber, answers, isParent, onJudge }: ReviewingViewProps) {
   const [judging, setJudging] = useState(false)
   const [expandedAnswer, setExpandedAnswer] = useState<Answer | null>(null)
-  const [isPortrait, setIsPortrait] = useState(false)
-  const [portraitDismissed, setPortraitDismissed] = useState(false)
-
-  useEffect(() => {
-    const mq = window.matchMedia('(orientation: portrait)')
-    setIsPortrait(mq.matches)
-    const handler = (e: MediaQueryListEvent) => {
-      setIsPortrait(e.matches)
-      if (!e.matches) setPortraitDismissed(false)
-    }
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
-  }, [])
 
   const handleJudge = async (result: 'match' | 'no_match') => {
     setJudging(true)
@@ -52,28 +39,9 @@ export function ReviewingView({ question, roundNumber, answers, isParent, onJudg
   }
 
   const expandedParsed = expandedAnswer ? parseAnswer(expandedAnswer.content) : null
-  const showPortraitOverlay = isPortrait && !portraitDismissed
 
   return (
     <>
-      {/* 縦画面オーバーレイ */}
-      {showPortraitOverlay && (
-        <div className="fixed inset-0 z-50 bg-slate-900/95 flex flex-col items-center justify-center p-6">
-          <div className="text-center space-y-4">
-            <div className="text-7xl animate-bounce">📱</div>
-            <p className="text-2xl font-black text-white">横画面にしてください</p>
-            <p className="text-slate-300 text-sm">横向きにすると回答が見やすくなります</p>
-            <button
-              type="button"
-              onClick={() => setPortraitDismissed(true)}
-              className="text-slate-400 text-xs underline mt-2"
-            >
-              このまま続ける
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* 拡大表示モーダル */}
       {expandedAnswer && expandedParsed && (
         <div
