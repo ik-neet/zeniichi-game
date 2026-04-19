@@ -28,6 +28,7 @@ export default function RoomPage() {
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [expired, setExpired] = useState(false)
+  const [gameEnded, setGameEnded] = useState(false)
 
   const channelRef = useRef<ReturnType<ReturnType<typeof getSupabaseClient>['channel']> | null>(null)
 
@@ -88,6 +89,8 @@ export default function RoomPage() {
         (payload) => {
           if (payload.eventType === 'UPDATE') {
             setRoom(payload.new as Room)
+          } else if (payload.eventType === 'DELETE') {
+            setGameEnded(true)
           }
         }
       )
@@ -281,6 +284,18 @@ export default function RoomPage() {
     return (
       <main className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
         <p className="text-slate-400">読み込み中...</p>
+      </main>
+    )
+  }
+
+  if (gameEnded) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-white to-cyan-50 p-4">
+        <div className="text-center space-y-4 max-w-sm">
+          <div className="text-6xl">🏁</div>
+          <p className="text-2xl font-black text-slate-700">ホストがゲームを終了しました</p>
+          <a href="/" className="inline-block mt-2 text-sm text-violet-500 hover:underline">トップへ戻る</a>
+        </div>
       </main>
     )
   }
