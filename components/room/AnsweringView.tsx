@@ -18,10 +18,9 @@ const PEN_WIDTHS = [
 ]
 
 const FONT_SIZES = [
-  { label: 'S', value: 32 },
-  { label: 'M', value: 48 },
-  { label: 'L', value: 72 },
-  { label: 'XL', value: 100 },
+  { label: 'S', value: 48 },
+  { label: 'M', value: 72 },
+  { label: 'L', value: 100 },
 ]
 
 type Mode = 'draw' | 'text'
@@ -61,7 +60,7 @@ export function AnsweringView({
 }: AnsweringViewProps) {
   const [mode, setMode] = useState<Mode>('draw')
   const [penWidth, setPenWidth] = useState(7)
-  const [fontSize, setFontSize] = useState(48)
+  const [fontSize, setFontSize] = useState(72)
   const [textInput, setTextInput] = useState('')
   const [textAnchor, setTextAnchor] = useState<TextAnchor | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -75,6 +74,9 @@ export function AnsweringView({
   const floatingInputRef = useRef<HTMLInputElement>(null)
   const lastPoint = useRef<{ x: number; y: number } | null>(null)
   const savedDrawing = useRef<ImageData | null>(null)
+  // 物理ピクセルサイズ（DPR対応）
+  const canvasPhysW = useRef(CANVAS_W)
+  const canvasPhysH = useRef(CANVAS_H)
 
   const canAnswer = !isParent || parentCanAnswer
   const answerCount = answeredSessionIds.length
@@ -86,10 +88,29 @@ export function AnsweringView({
 
   const initCanvas = useCallback(() => {
     const canvas = canvasRef.current
+    const container = containerRef.current
     const ctx = canvas?.getContext('2d')
     if (!canvas || !ctx) return
+
+    ctx.resetTransform()
+
+    // 表示サイズ × DPR で物理解像度を設定し、論理座標系 (0-CANVAS_W, 0-CANVAS_H) を維持
+    if (container) {
+      const rect = container.getBoundingClientRect()
+      const dpr = window.devicePixelRatio || 1
+      const physW = Math.round(rect.width * dpr)
+      const physH = Math.round(rect.height * dpr)
+      if (physW > 0 && physH > 0) {
+        canvas.width = physW
+        canvas.height = physH
+        canvasPhysW.current = physW
+        canvasPhysH.current = physH
+        ctx.scale(physW / CANVAS_W, physH / CANVAS_H)
+      }
+    }
+
     fillBackground(ctx)
-    savedDrawing.current = ctx.getImageData(0, 0, CANVAS_W, CANVAS_H)
+    savedDrawing.current = ctx.getImageData(0, 0, canvasPhysW.current, canvasPhysH.current)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -112,7 +133,7 @@ export function AnsweringView({
     return () => { document.body.style.overflow = '' }
   }, [modalOpen])
 
-  // Preview typed text on canvas in real-time
+  // テキスト入力のリアルタイムプレビュー
   useEffect(() => {
     const canvas = canvasRef.current
     const ctx = canvas?.getContext('2d')
@@ -139,7 +160,7 @@ export function AnsweringView({
       ctx.fillStyle = PEN_COLOR
       ctx.textBaseline = 'top'
       ctx.fillText(textInput.trim(), textAnchor.canvasX, textAnchor.canvasY)
-      savedDrawing.current = ctx.getImageData(0, 0, CANVAS_W, CANVAS_H)
+      savedDrawing.current = ctx.getImageData(0, 0, canvasPhysW.current, canvasPhysH.current)
       setHasContent(true)
     } else if (savedDrawing.current) {
       ctx.putImageData(savedDrawing.current, 0, 0)
@@ -181,7 +202,7 @@ export function AnsweringView({
     const canvas = canvasRef.current
     const ctx = canvas?.getContext('2d')
     if (canvas && ctx) {
-      savedDrawing.current = ctx.getImageData(0, 0, CANVAS_W, CANVAS_H)
+      savedDrawing.current = ctx.getImageData(0, 0, canvasPhysW.current, canvasPhysH.current)
     }
   }
 
@@ -302,6 +323,9 @@ export function AnsweringView({
     }
   }
 
+  // キャンバス表示の最大幅: 高さ55vhに収まるよう縦横比から算出
+  const canvasMaxWidth = `calc(55vh * ${CANVAS_W} / ${CANVAS_H})`
+
   // キャンバス＋ツールバーのJSX（モーダル内で使う）
   const canvasArea = (
     <div className="flex flex-col">
@@ -363,62 +387,66 @@ export function AnsweringView({
         </button>
       </div>
 
-      {/* キャンバス */}
-      <div
-        ref={containerRef}
-        className="relative overflow-hidden"
-        style={{ background: CANVAS_BG }}
-      >
-        <canvas
-          ref={canvasRef}
-          width={CANVAS_W}
-          height={CANVAS_H}
-          className={`w-full touch-none block ${mode === 'draw' ? 'cursor-crosshair' : 'cursor-text'}`}
-          style={{ aspectRatio: `${CANVAS_W}/${CANVAS_H}` }}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onClick={handleCanvasClick}
-        />
-
-        {/* PC用: 透明フローティング入力（タッチ端末では使われない） */}
-        {mode === 'text' && textAnchor && (
-          <input
-            ref={floatingInputRef}
-            value={textInput}
-            onChange={(e) => setTextInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') commitText() }}
-            className="absolute bg-transparent border-none outline-none caret-white p-0 m-0 pointer-events-none opacity-0"
-            style={{
-              color: 'transparent',
-              left: textAnchor.displayX,
-              top: textAnchor.displayY,
-              fontSize: `${fontSize * (containerRef.current?.getBoundingClientRect().width ?? CANVAS_W) / CANVAS_W}px`,
-              fontWeight: 'bold',
-              fontFamily: 'sans-serif',
-              minWidth: 4,
-              width: '80%',
-            }}
-            autoComplete="off"
+      {/* キャンバス: PCで高さが抑制されるようmax-widthで制限し中央揃え */}
+      <div className="flex justify-center" style={{ background: CANVAS_BG }}>
+        <div
+          ref={containerRef}
+          className="relative overflow-hidden w-full"
+          style={{
+            aspectRatio: `${CANVAS_W}/${CANVAS_H}`,
+            maxWidth: canvasMaxWidth,
+          }}
+        >
+          <canvas
+            ref={canvasRef}
+            width={CANVAS_W}
+            height={CANVAS_H}
+            className={`w-full h-full touch-none block ${mode === 'draw' ? 'cursor-crosshair' : 'cursor-text'}`}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onClick={handleCanvasClick}
           />
-        )}
 
-        {!hasContent && !textAnchor && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <p className="text-white/30 text-sm select-none">
-              {mode === 'draw' ? 'ここに手書きで回答してください' : 'キャンバスをクリックしてテキストを入力'}
-            </p>
-          </div>
-        )}
-        {mode === 'text' && !textAnchor && (
-          <div className="absolute bottom-2 left-0 right-0 flex justify-center pointer-events-none">
-            <span className="text-white/40 text-xs">クリックした位置にテキストを配置</span>
-          </div>
-        )}
+          {/* PC用: 透明フローティング入力（タッチ端末では使われない） */}
+          {mode === 'text' && textAnchor && (
+            <input
+              ref={floatingInputRef}
+              value={textInput}
+              onChange={(e) => setTextInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') commitText() }}
+              className="absolute bg-transparent border-none outline-none caret-white p-0 m-0 pointer-events-none opacity-0"
+              style={{
+                color: 'transparent',
+                left: textAnchor.displayX,
+                top: textAnchor.displayY,
+                fontSize: `${fontSize * (containerRef.current?.getBoundingClientRect().width ?? CANVAS_W) / CANVAS_W}px`,
+                fontWeight: 'bold',
+                fontFamily: 'sans-serif',
+                minWidth: 4,
+                width: '80%',
+              }}
+              autoComplete="off"
+            />
+          )}
+
+          {!hasContent && !textAnchor && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <p className="text-white/30 text-sm select-none">
+                {mode === 'draw' ? 'ここに手書きで回答してください' : 'キャンバスをクリックしてテキストを入力'}
+              </p>
+            </div>
+          )}
+          {mode === 'text' && !textAnchor && (
+            <div className="absolute bottom-2 left-0 right-0 flex justify-center pointer-events-none">
+              <span className="text-white/40 text-xs">クリックした位置にテキストを配置</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* テキストモード入力バー（タッチ端末でも確実に入力できる可視バー） */}
