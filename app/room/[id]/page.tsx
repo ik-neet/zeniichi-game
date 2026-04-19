@@ -419,7 +419,7 @@ export default function RoomPage() {
           currentSessionId={sessionId}
           parentSessionId={prevRound.parent_session_id}
           isParent={false}
-          isHost={isHost}
+          isHost={false}
           matchCount={matchCount}
           noMatchCount={noMatchCount}
           onNextRound={handleNextRound}
