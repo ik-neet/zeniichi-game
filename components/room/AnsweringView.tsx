@@ -304,7 +304,7 @@ export function AnsweringView({
 
   // キャンバス＋ツールバーのJSX（モーダル内で使う）
   const canvasArea = (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col">
       {/* ツールバー */}
       <div className="flex items-center gap-2 px-3 py-2 bg-white border-b border-slate-100 flex-shrink-0">
         <div className="flex rounded-lg overflow-hidden border border-violet-200">
@@ -366,15 +366,15 @@ export function AnsweringView({
       {/* キャンバス */}
       <div
         ref={containerRef}
-        className="relative flex-1 overflow-hidden"
+        className="relative overflow-hidden"
         style={{ background: CANVAS_BG }}
       >
         <canvas
           ref={canvasRef}
           width={CANVAS_W}
           height={CANVAS_H}
-          className={`w-full h-full touch-none block ${mode === 'draw' ? 'cursor-crosshair' : 'cursor-text'}`}
-          style={{ objectFit: 'fill' }}
+          className={`w-full touch-none block ${mode === 'draw' ? 'cursor-crosshair' : 'cursor-text'}`}
+          style={{ aspectRatio: `${CANVAS_W}/${CANVAS_H}` }}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
@@ -480,8 +480,8 @@ export function AnsweringView({
             </button>
           </div>
 
-          {/* キャンバスエリア（残り全高さ） */}
-          <div className="flex-1 min-h-0">
+          {/* キャンバスエリア */}
+          <div className="flex-1 overflow-y-auto">
             {canvasArea}
           </div>
         </div>
