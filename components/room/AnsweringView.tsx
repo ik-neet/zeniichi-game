@@ -13,10 +13,10 @@ const CANVAS_W = 600
 const CANVAS_H = 480
 
 const FONT_SIZES = [
-  { label: 'S', value: 16 },
-  { label: 'M', value: 24 },
-  { label: 'L', value: 36 },
-  { label: 'XL', value: 52 },
+  { label: 'S', value: 32 },
+  { label: 'M', value: 48 },
+  { label: 'L', value: 72 },
+  { label: 'XL', value: 100 },
 ]
 
 type Mode = 'draw' | 'text'
